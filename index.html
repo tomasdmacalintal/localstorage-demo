@@ -52,10 +52,21 @@
 
             <!-- Demo form -->
             <h2 class="title is-4">Try it yourself!</h2>
+            <div class="box mt-4">
+                <h3 class="title is-5">Saved data</h3>
+                <pre id="dump"></pre>
+            </div>
             <div class="field">
                 <label class="label">Your Name</label>
                 <div class="control">
                     <input id="name" class="input" type="text" placeholder="Enter your name">
+                </div>
+            </div>
+
+            <div class="field">
+                <label class="label">Favorite Band/ Singer</label>
+                <div class="control">
+                  <input id="favoriteBand" class="input" type="text" placeholder="e.g., Itchyworms">
                 </div>
             </div>
 
@@ -95,6 +106,19 @@
   document.addEventListener("DOMContentLoaded", function() {
     const savedName = localStorage.getItem("name");
     const savedTheme = localStorage.getItem("theme") || "light";
+    const savedFavoriteBand = localStorage.getItem("favoriteBand");
+    
+    
+    const savedProfile = localStorage.getItem("profile");
+    if (savedProfile) {
+        const p = JSON.parse(savedProfile);
+        document.getElementById("name").value = p.name || "";
+        document.getElementById("theme").value = p.theme || "light";
+        document.getElementById("favoriteBand").value = p.favoriteBand || "";
+    }
+
+    if (savedFavoriteBand) document.getElementById("favoriteBand").value = savedFavoriteBand;
+    
 
     if (savedName) document.getElementById("name").value = savedName;
     document.getElementById("theme").value = savedTheme;
@@ -116,21 +140,46 @@
 
   // Save button
   document.getElementById("save").onclick = function() {
+    const profile = {
+        name: document.getElementById("name").value,
+        theme: document.getElementById("theme").value,
+        favoriteColor: document.getElementById("favoriteBand").value
+    };
     localStorage.setItem("name", document.getElementById("name").value);
+    localStorage.setItem("favoriteBand", document.getElementById("favoriteBand").value);
+    localStorage.setItem("profile", JSON.stringify(profile));
     const themeValue = document.getElementById("theme").value;
     localStorage.setItem("theme", themeValue);
     applyTheme(themeValue);
     document.getElementById("status").textContent = "Data saved! Reload the page to see persistence.";
+    // ...existing save code...
+    renderDump();
   };
 
   // Clear button
   document.getElementById("clear").onclick = function() {
-    localStorage.clear();
+    localStorage.removeItem("name");
+    localStorage.removeItem("theme");
+    localStorage.removeItem("favoriteBand");
+    localStorage.removeItem("profile");
+    document.getElementById("status").textContent = "Removed specific items from localStorage!";
     document.getElementById("name").value = "";
     document.getElementById("theme").value = "light";
-    applyTheme("light");
-    document.getElementById("status").textContent = "localStorage cleared!";
+    document.getElementById("favoriteBand").value = "";
+    // ...existing removeItem code...
+    renderDump();
   };
+
+  document.addEventListener("DOMContentLoaded", renderDump);
+
+  function renderDump() {
+    const dump = {};
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        dump[key] = localStorage.getItem(key);
+    }
+    document.getElementById("dump").textContent = JSON.stringify(dump, null, 2);
+  }
 </script>
 
 </body>
